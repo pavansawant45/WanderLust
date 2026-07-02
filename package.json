@@ -1,5 +1,5 @@
 {
-  "engines" : {
+  "engines": {
     "node": "24.11.0"
   },
   "name": "majorproject",
@@ -14,7 +14,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "cloudinary": "^2.10.0",
+    "cloudinary": "^1.41.3",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^6.0.0",
     "dotenv": "^17.4.2",
