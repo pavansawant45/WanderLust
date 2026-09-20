@@ -1,9 +1,14 @@
 const Listing = require("../models/listing");
 const Review = require("../models/review");
 
-
-module.exports.createReview =  async (req,res) =>{
+module.exports.createReview = async (req,res) => {
     let listing = await Listing.findById(req.params.id);
+
+    if(listing.owner.equals(req.user._id)) {
+        req.flash("error", "You cannot review your own listing!");
+        return res.redirect(`/listings/${listing._id}`);
+    }
+
     let newReview = new Review(req.body.review);
     newReview.author = req.user._id;
     listing.reviews.push(newReview);
@@ -13,7 +18,6 @@ module.exports.createReview =  async (req,res) =>{
     req.flash("success", "New Review Created!");
     res.redirect(`/listings/${listing._id}`);
 }
-
 
 module.exports.destroyReview = async (req,res) =>{
     let { id, reviewId } = req.params;

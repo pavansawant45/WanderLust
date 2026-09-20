@@ -15,10 +15,29 @@
                 <textarea id="description" name="listing[description]" class="form-control" required></textarea>
                 <div class="invalid-feedback">Please enter a short description!</div>
         </div>
+
+        <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" name="listing[category]" class="form-select" required>
+                    <option value="" disabled selected>Select a category</option>
+                    <option value="Trending">Trending</option>
+                    <option value="Rooms">Rooms</option>
+                    <option value="Iconic Cities">Iconic Cities</option>
+                    <option value="Mountains">Mountains</option>
+                    <option value="Castles">Castles</option>
+                    <option value="Amazing Pools">Amazing Pools</option>
+                    <option value="Camping">Camping</option>
+                    <option value="Farms">Farms</option>
+                    <option value="Arctic">Arctic</option>
+                    <option value="Domes">Domes</option>
+                </select>
+                <div class="invalid-feedback">Please select a category!</div>
+        </div>
        
         <div class="mb-3">
-                <label for="image" class="form-label">Upload Listing Image</label>
-                <input type="file" id="image" name="listing[image]" class="form-control" required>
+                <label for="image" class="form-label">Upload Listing Images</label>
+                <input type="file" id="image" name="listing[image]" class="form-control" accept="image/*" multiple required>
+                <div class="form-text">You can select up to 6 images (max 5MB each). The first image becomes the cover photo.</div>
         </div>
 
         <div class="row">
@@ -35,13 +54,11 @@
              </div>
         </div>
         
-       
         <div class="mb-3">
                 <label for="location" class="form-label">Location</label>
                 <input type="text" id="location" name="listing[location]" placeholder="Mumbai, Maharashtra" class="form-control" required>
                 <div class="invalid-feedback">Location should be valid!</div>
         </div>
-        
         
         <button type="submit" class="btn btn-dark add-btn mt-3 mb-5">Add</button>
        

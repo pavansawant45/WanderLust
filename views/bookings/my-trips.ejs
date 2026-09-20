@@ -1,0 +1,29 @@
+<% layout("/layouts/boilerplate") %>
+<div class="row mt-3 mb-5">
+  <div class="col-10 offset-1">
+    <h3>My Trips</h3>
+    <% if(bookings.length === 0) { %>
+      <p>You haven't booked any trips yet. <a href="/listings">Browse listings</a>.</p>
+    <% } %>
+    <div class="row row-cols-md-2 row-cols-1 mt-3">
+      <% bookings.forEach(b => { %>
+        <div class="col mb-3">
+          <div class="card p-3">
+            <h5><%= b.listing.title %></h5>
+            <p class="mb-1"><%= b.listing.location %>, <%= b.listing.country %></p>
+            <p class="mb-1"><%= b.checkIn.toDateString() %> &rarr; <%= b.checkOut.toDateString() %></p>
+            <p class="mb-1">
+              &#8377;<%= b.totalPrice.toLocaleString("en-IN") %> ·
+              <span class="badge bg-<%= b.status === 'confirmed' ? 'success' : b.status === 'cancelled' ? 'secondary' : 'warning' %>"><%= b.status %></span>
+            </p>
+            <% if(b.status !== "cancelled" && new Date(b.checkIn) > new Date()) { %>
+              <form method="POST" action="/bookings/<%= b._id %>?_method=DELETE" class="mt-2">
+                <button class="btn btn-sm btn-outline-danger">Cancel Booking</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>

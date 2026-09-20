@@ -9,18 +9,34 @@
     background-color: #fe424d;
     color: #fff;
   }
-
   .search-btn i {
     display: inline;
     margin-right: 0.5rem;
   }
-
   .search-input {
     border-radius: 25px;
-    padding: 0.5rem 3rem 0.5rem 3rem;
+    padding: 0.5rem 1.5rem 0.5rem 1.5rem;
     font-size: 1rem;
   }
-
+  .country-select {
+    border-radius: 25px;
+    padding: 0.5rem 1.5rem;
+  }
+  .search-form {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+@media (max-width: 991.98px) {
+    .search-form {
+        flex-wrap: wrap;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    .search-input, .country-select {
+        width: 100%;
+    }
+}
 </style>
 
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
@@ -32,23 +48,31 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link" href="/listings">Explore</a>
-        
       </div>
       <div class="navbar-nav ms-auto">
-          <form class="d-flex" role="search">
-          <input class="form-control me-2 search-input" type="search" placeholder="Search destinations"/>
+        <form class="d-flex align-items-center search-form" role="search" action="/listings" method="GET">
+          <input class="form-control search-input" type="search" name="search" placeholder="Search destinations" value="<%= typeof search !== 'undefined' ? search : '' %>"/>
+          <select class="form-select country-select" name="country">
+            <option value="">All Countries</option>
+            <% if(typeof countries !== 'undefined' && countries) { %>
+              <% countries.sort().forEach(c => { %>
+                <option value="<%= c %>" <%= (typeof country !== 'undefined' && country === c) ? 'selected' : '' %>><%= c %></option>
+              <% }) %>
+            <% } %>
+          </select>
           <button class="btn search-btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
-          </form>
-
+        </form>
       </div>
       <div class="navbar-nav ms-auto">
         <a class="nav-link" href="/listings/new">Airbnb your home</a>
         <% if(!currUser) { %>
           <a class="nav-link" href="/signup"><b>Sign up</b></a>
-        <a class="nav-link" href="/login"><b>Log in</b></a>
+          <a class="nav-link" href="/login"><b>Log in</b></a>
         <% } %>
         <% if(currUser) { %>
-          <a class="nav-link" href="/logout">Log out</a>
+        <a class="nav-link" href="/my-trips">My Trips</a>
+        <a class="nav-link" href="/host/bookings">My Bookings</a>
+        <a class="nav-link" href="/logout">Log out</a>
         <% } %>
       </div>
     </div>

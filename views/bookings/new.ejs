@@ -1,0 +1,48 @@
+<% layout("/layouts/boilerplate") %>
+<div class="row mt-3 mb-5">
+  <div class="col-8 offset-2">
+    <h3>Book: <%= listing.title %></h3>
+    <p class="text-muted"><%= listing.location %>, <%= listing.country %> · &#8377;<%= listing.price.toLocaleString("en-IN") %> / night</p>
+
+    <form method="POST" action="/listings/<%= listing._id %>/book" novalidate class="needs-validation">
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="checkIn" class="form-label">Check-in</label>
+          <input type="date" id="checkIn" name="checkIn" class="form-control" required>
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="checkOut" class="form-label">Check-out</label>
+          <input type="date" id="checkOut" name="checkOut" class="form-control" required>
+        </div>
+      </div>
+      <div class="mb-3 col-md-4">
+        <label for="guests" class="form-label">Guests</label>
+        <input type="number" id="guests" name="guests" min="1" value="1" class="form-control" required>
+      </div>
+
+      <p id="priceBreakdown" class="fw-bold"></p>
+
+      <button type="submit" class="btn auth-btn">Proceed to Payment</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const price = <%= listing.price %>;
+  const checkInEl = document.getElementById("checkIn");
+  const checkOutEl = document.getElementById("checkOut");
+  const breakdown = document.getElementById("priceBreakdown");
+
+  function updateTotal() {
+    const inDate = new Date(checkInEl.value);
+    const outDate = new Date(checkOutEl.value);
+    if(checkInEl.value && checkOutEl.value && outDate > inDate) {
+      const nights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
+      breakdown.textContent = `${nights} night(s) x ₹${price.toLocaleString("en-IN")} = ₹${(nights * price).toLocaleString("en-IN")}`;
+    } else {
+      breakdown.textContent = "";
+    }
+  }
+  checkInEl.addEventListener("change", updateTotal);
+  checkOutEl.addEventListener("change", updateTotal);
+</script>

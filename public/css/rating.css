@@ -195,3 +195,9 @@
   -webkit-transition: background-position .7s;
   transition: background-position .7s;
 }
+
+.starability-result,
+.starability-slot {
+  transform: scale(0.7);
+  transform-origin: left center;
+}

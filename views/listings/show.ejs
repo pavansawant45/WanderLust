@@ -1,11 +1,41 @@
 <% layout("/layouts/boilerplate") %>
 
+<% let allImages = [listing.image, ...(listing.images || [])]; %>
+
 <div class="row mt-3">
     <div class="col-8 offset-3">
         <h3><%= listing.title %></h3>
+        <% if(listing.category) { %>
+            <span class="badge category-badge mb-2"><%= listing.category %></span>
+        <% } %>
     </div>
     <div class="card col-6 offset-3 show-card listing-card">
-         <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing image">
+
+        <div id="listingCarousel" class="carousel slide" data-bs-ride="carousel">
+            <% if(allImages.length > 1) { %>
+            <div class="carousel-indicators">
+                <% allImages.forEach((img, i) => { %>
+                    <button type="button" data-bs-target="#listingCarousel" data-bs-slide-to="<%= i %>" class="<%= i === 0 ? 'active' : '' %>"></button>
+                <% }) %>
+            </div>
+            <% } %>
+            <div class="carousel-inner rounded">
+                <% allImages.forEach((img, i) => { %>
+                    <div class="carousel-item <%= i === 0 ? 'active' : '' %>">
+                        <img src="<%= img.url %>" class="d-block w-100 show-img card-img-top" alt="listing image">
+                    </div>
+                <% }) %>
+            </div>
+            <% if(allImages.length > 1) { %>
+                <button class="carousel-control-prev" type="button" data-bs-target="#listingCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#listingCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            <% } %>
+        </div>
+
          <div class="card-body">
          <p class="card-text">Owned by <i><%= listing.owner.username %></i></p>
          <p class="card-text"><%= listing.description %></p>
@@ -14,13 +44,17 @@
          <p class="card-text"><%= listing.country %></p>
          </div>
     </div>
+     <% if(currUser && !listing.owner._id.equals(currUser._id)) { %>
+        <div class="col-8 offset-3 mt-3">
+            <a href="/listings/<%= listing._id %>/book" class="btn auth-btn">Book Now</a>
+        </div>
+    <% } %>
     <br>
     <% if(currUser && listing.owner._id.equals(currUser._id)) { %>
-        <div class="btns mb-5">
-        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>
-
-        <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
-        <button class="btn btn-dark offset-5">Delete</button>
+        <div class="btns mb-5 col-8 offset-3">
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark edit-btn">Edit</a>
+        <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="m-0">
+        <button class="btn btn-dark">Delete</button>
         </form>
         </div>
     <% } %>
@@ -28,7 +62,7 @@
 
 <div class="col-8 offset-3 mb-3">
     <hr>
-    <% if(currUser) { %>
+    <% if(currUser && !listing.owner._id.equals(currUser._id)) { %>
     <h4>Leave a Review</h4>
     <form method="POST" action="/listings/<%= listing._id %>/reviews" novalidate class="needs-validation">
     
@@ -62,7 +96,7 @@
     <p><b>All Reviews</b></p>
     <div class="row">
     <% for(review of listing.reviews) { %>
-            <div class="card col-5 mb-3 ms-3">
+            <div class="card col-md-5 col-12 mb-3 ms-md-3">
                 <div class="card-body">
                     <h5 class="card-title">@<%= review.author.username %></h5>
                     <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
@@ -76,6 +110,3 @@
     </div>
 </div>
 </div>
-
-
-    

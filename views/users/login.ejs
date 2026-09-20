@@ -1,18 +1,37 @@
-<% layout("/layouts/boilerplate") %>  
-<div class="row mt-3">
-  <h1 class="col-6 offset-3">Login</h1>
-  <div class="col-6 offset-3">
-    <form action="/login" method="POST" class="needs-validation" novalidate>
-           <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" name="username" class="form-control" required>
-            </div>
+<% layout("/layouts/boilerplate") %>
+<div class="auth-wrapper">
+  <div class="auth-card shadow-sm">
+    <div class="auth-side d-none d-md-flex">
+      <div>
+        <i class="fa-solid fa-compass auth-logo"></i>
+        <h2>Welcome back</h2>
+        <p>Log in to manage your listings, view your bookings, and pick up right where you left off.</p>
+      </div>
+    </div>
+    <div class="auth-form-side">
+      <h3 class="mb-4">Log in</h3>
+      <form action="/login" method="POST" class="needs-validation" novalidate>
+  <div class="mb-3">
+    <label for="username" class="form-label">Username</label>
+    <div class="input-group has-validation">
+      <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+      <input type="text" id="username" name="username" class="form-control" placeholder="Your username" required>
+      <div class="invalid-feedback">Please enter your username.</div>
+    </div>
+  </div>
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" class="form-control" required>
-            </div> 
-            <button class="btn btn-success">Login</button>
-    </form>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password</label>
+    <div class="input-group has-validation">
+      <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+      <input type="password" id="password" name="password" class="form-control" placeholder="Your password" required>
+      <div class="invalid-feedback">Please enter your password.</div>
+    </div>
+  </div>
+
+  <button class="btn auth-btn w-100 mt-2">Log In</button>
+</form>
+      <p class="mt-3 text-center">New to WanderLust? <a href="/signup">Sign up</a></p>
+    </div>
   </div>
 </div>

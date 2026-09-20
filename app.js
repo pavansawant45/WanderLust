@@ -15,6 +15,9 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
+const Listing = require("./models/listing.js");
+const staticRouter = require("./routes/static.js");
+const bookingRouter = require("./routes/booking.js");
 
 
 const listingRouter = require("./routes/listing.js");
@@ -39,6 +42,7 @@ main()
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({extended:true}));
+app.use(express.json()); 
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.engine('ejs', ejsMate);
@@ -90,6 +94,13 @@ app.use((req,res,next) =>{
     next();
 })
 
+app.use(async (req,res,next) => {
+    res.locals.countries = await Listing.distinct("country");
+    next();
+});
+
+app.use("/", staticRouter);
+
 // app.get("/demouser", async (req,res) =>{
 //     let fakeUser = new User({
 //         email: "pavan123@gmail.com",
@@ -102,15 +113,24 @@ app.use((req,res,next) =>{
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
+app.use("/", bookingRouter);
 
 app.use((req, res, next) => {
     next(new ExpressError(404, "Page Not Found!"));
 });
 
 app.use((err,req,res,next) =>{
+    if (err.code === "LIMIT_FILE_SIZE") {
+        err.statusCode = 400;
+        err.message = "File too large! Each image must be under 5MB.";
+    }
+    if (err.code === "LIMIT_UNEXPECTED_FILE") {
+        err.statusCode = 400;
+        err.message = "Too many images! You can upload up to 6 per listing.";
+    }
     let {statusCode = 500, message = "Something went wrong!"} = err;
     res.status(statusCode).render("error.ejs", {message});
- })
+})
 
 app.listen(8000, () => {
     console.log("Server is listening to port 8000");

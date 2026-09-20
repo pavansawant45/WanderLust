@@ -1,87 +1,89 @@
 <% layout("/layouts/boilerplate") %> 
     
     <style>
-       #filters {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-       }
+   #filters {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+   }
+   .filter {
+    text-align: center;
+    margin-right: 2rem;
+    margin-top: 2rem;
+    opacity: 0.7;
+    flex: 0 0 auto;
+   }
+   .filter:hover{
+    opacity: 1;
+    cursor: pointer;
+   }
+   .filter p{
+    font-size: 0.7rem;
+   }
+   .filter-link {
+    text-decoration: none;
+    color: inherit;
+   }
+   .active-filter {
+    opacity: 1 !important;
+    border-bottom: 2px solid #fe424d;
+   }
+   .tax-info{
+    display: none;
+   }
+   .tax-toggle{
+    border: 1px solid black;
+    border-radius: 1rem;
+    height: 3.25rem;
+    padding: 1rem;
+    margin-left: 2rem;
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+   }
+   @media (max-width: 767.98px) {
+      .tax-toggle { margin-left: 1rem; margin-top: 1rem; }
+   }
+   </style>
 
-       .filter {
-        text-align: center;
-        margin-right: 2rem;
-        margin-top: 2rem;
-        opacity: 0.7;
-       }
-
-       .filter:hover{
-        opacity: 1;
-        cursor: pointer;
-       }
-
-       .filter p{
-        font-size: 0.7rem;
-       }
-
-       .tax-info{
-        display: none;
-       }
-
-       .tax-toggle{
-        border: 1px solid black;
-        border-radius: 1rem;
-        height: 3.25rem;
-        padding: 1rem;
-        margin-left: 2rem;
-        display: flex;
-        align-items: center;
-       }
-    </style>
 
 
+    <%
+    const categories = ["Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic", "Domes"];
+    const icons = {
+        "Trending": "fa-solid fa-fire",
+        "Rooms": "fa-solid fa-bed",
+        "Iconic Cities": "fa-solid fa-mountain-city",
+        "Mountains": "fa-solid fa-mountain",
+        "Castles": "fa-brands fa-fort-awesome",
+        "Amazing Pools": "fa-solid fa-person-swimming",
+        "Camping": "fa-solid fa-campground",
+        "Farms": "fa-solid fa-tractor",
+        "Arctic": "fa-solid fa-snowman",
+        "Domes": "fa-solid fa-igloo"
+    };
+    const qs = country ? `&country=${country}` : "";
+    %>
 
     <div id="filters">
-        <div class="filter">
-            <div><i class="fa-solid fa-fire"></i></div>
-            <p>Trending</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-bed"></i></div>
-            <p>Rooms</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-mountain-city"></i></div>
-            <p>Iconic Cities</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-mountain"></i></div>
-            <p>Mountains</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-brands fa-fort-awesome"></i></div>
-            <p>Castles</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-person-swimming"></i></div>
-            <p>Amazing Pools</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-campground"></i></div>
-            <p>Camping</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-tractor"></i></div>
-            <p>Farms</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-snowman"></i></div>
-            <p>Arctic</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-igloo"></i></div>
-            <p>Domes</p>
-        </div>
-        
+        <% categories.forEach(cat => { %>
+            <a href="/listings?category=<%= encodeURIComponent(cat) %><%= qs %>" class="filter-link">
+                <div class="filter <%= category === cat ? 'active-filter' : '' %>">
+                    <div><i class="<%= icons[cat] %>"></i></div>
+                    <p><%= cat %></p>
+                </div>
+            </a>
+        <% }) %>
+
+        <% if(category) { %>
+            <a href="/listings<%= country ? '?country=' + country : '' %>" class="filter-link">
+                <div class="filter">
+                    <div><i class="fa-solid fa-xmark"></i></div>
+                    <p>Clear</p>
+                </div>
+            </a>
+        <% } %>
 
         <div class="tax-toggle">
             <div class="form-check-reverse form-switch">
@@ -89,9 +91,7 @@
             <label class="form-check-label" for="flexSwitchCheckDefault">Display total after taxes</label>
             </div>
         </div>
-        
     </div>
-
     <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
         <% for (let listing of allListings) { %>
         <a href="/listings/<%= listing._id %>" class="listing-link">
