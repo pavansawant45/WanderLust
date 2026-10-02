@@ -111,6 +111,33 @@
         <% } %>
     </div>
 
+    <% if(totalPages > 1) { %>
+    <nav class="mt-4 mb-5" aria-label="Listing pages">
+    <ul class="pagination justify-content-center">
+        <%
+          const qp = (p) => {
+            let params = [`page=${p}`];
+            if(category) params.push(`category=${encodeURIComponent(category)}`);
+            if(country) params.push(`country=${encodeURIComponent(country)}`);
+            if(search) params.push(`search=${encodeURIComponent(search)}`);
+            return `/listings?${params.join("&")}`;
+          };
+        %>
+        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="<%= qp(currentPage - 1) %>">Previous</a>
+        </li>
+        <% for(let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                <a class="page-link" href="<%= qp(i) %>"><%= i %></a>
+            </li>
+        <% } %>
+        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+            <a class="page-link" href="<%= qp(currentPage + 1) %>">Next</a>
+        </li>
+    </ul>
+    </nav>
+    <% } %>
+
     <!-- <ul>
         <% for (let listing of allListings) { %>
             <li><a href="/listings/<%= listing._id %>"><%= listing.title %></a></li>

@@ -128,10 +128,15 @@ app.use((err,req,res,next) =>{
         err.statusCode = 400;
         err.message = "Too many images! You can upload up to 6 per listing.";
     }
+    console.error(err);
     let {statusCode = 500, message = "Something went wrong!"} = err;
     res.status(statusCode).render("error.ejs", {message});
 })
 
-app.listen(8000, () => {
-    console.log("Server is listening to port 8000");
-})
+module.exports = app;
+
+if (require.main === module) {
+    app.listen(8000, () => {
+        console.log("Server is listening to port 8000");
+    });
+}

@@ -1,25 +1,40 @@
 const Listing = require("../models/listing");
 
 module.exports.index = async (req,res) => {
-    let { category, country, search } = req.query;
+    let { category, country, search, page } = req.query;
     let filter = {};
 
     if (category) filter.category = category;
     if (country) filter.country = country;
+    if (search) filter.$text = { $search: search };
+
+    const limit = 9;
+    const currentPage = Math.max(parseInt(page) || 1, 1);
+    const skip = (currentPage - 1) * limit;
+
+    let listingsQuery = Listing.find(filter);
+
     if (search) {
-        filter.$or = [
-            { title: { $regex: search, $options: "i" } },
-            { location: { $regex: search, $options: "i" } },
-            { country: { $regex: search, $options: "i" } },
-        ];
+        // Rank results by relevance when doing a text search
+        listingsQuery = listingsQuery
+            .select({ score: { $meta: "textScore" } })
+            .sort({ score: { $meta: "textScore" } });
     }
 
-    const allListings = await Listing.find(filter);
+    const [allListings, totalCount] = await Promise.all([
+        listingsQuery.skip(skip).limit(limit),
+        Listing.countDocuments(filter)
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit);
+
     res.render("listings/index.ejs", {
         allListings,
         category: category || "",
         country: country || "",
-        search: search || ""
+        search: search || "",
+        currentPage,
+        totalPages
     });
 }
 
