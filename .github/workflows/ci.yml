@@ -28,3 +28,5 @@ jobs:
           CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
           CLOUD_API_KEY: ${{ secrets.CLOUD_API_KEY }}
           CLOUD_API_SECRET: ${{ secrets.CLOUD_API_SECRET }}
+          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
