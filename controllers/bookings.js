@@ -37,6 +37,11 @@ module.exports.createBooking = async (req, res) => {
 
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
+        if (isNaN(checkInDate) || isNaN(checkOutDate)) {
+        req.flash("error", "Please enter valid dates.");
+        return res.redirect(`/listings/${id}/book`);
+    }
+    const guestCount = Math.min(Math.max(parseInt(guests) || 1, 1), 20);
     const today = new Date();
     today.setHours(0,0,0,0);
 
@@ -70,7 +75,7 @@ module.exports.createBooking = async (req, res) => {
         guest: req.user._id,
         checkIn: checkInDate,
         checkOut: checkOutDate,
-        guests: guests || 1,
+        guests: guestCount,
         totalPrice,
         status: "pending"
     });

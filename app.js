@@ -18,6 +18,7 @@ const User = require("./models/user.js");
 const Listing = require("./models/listing.js");
 const staticRouter = require("./routes/static.js");
 const bookingRouter = require("./routes/booking.js");
+const { nonce, helmetMiddleware, rejectOperatorKeys, globalLimiter, authLimiter } = require("./security.js");
 
 
 const listingRouter = require("./routes/listing.js");
@@ -41,8 +42,14 @@ main()
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+if (process.env.NODE_ENV === "production") {
+    app.set("trust proxy", 1); // Render sits behind a proxy; needed for real visitor IPs and secure cookies
+}
+app.use(nonce);
+app.use(helmetMiddleware);
 app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
+app.use(rejectOperatorKeys);
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.engine('ejs', ejsMate);
@@ -55,7 +62,7 @@ const store = MongoStore.create({
     touchAfter: 24 * 3600,
 });
 
-store.on("error", () => {
+store.on("error", (err) => {
     console.log("ERROR in MONGO SESSION STORE", err);
 });
 
@@ -63,11 +70,12 @@ const sessionOptions = {
     store,
     secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
     },
 }
 
@@ -110,6 +118,9 @@ app.use("/", staticRouter);
 //     res.send(registeredUser);
 // })
 
+app.use(globalLimiter);
+app.post(["/login", "/signup"], authLimiter);
+
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
@@ -128,8 +139,18 @@ app.use((err,req,res,next) =>{
         err.statusCode = 400;
         err.message = "Too many images! You can upload up to 6 per listing.";
     }
-    console.error(err);
+    if (err.name === "CastError") {   // e.g. /listings/not-a-real-id
+        err.statusCode = 404;
+        err.message = "Page Not Found!";
+    }
+    
     let {statusCode = 500, message = "Something went wrong!"} = err;
+    if (statusCode >= 500) {
+        console.error(err);   // only log real server errors
+    }
+    if (statusCode >= 500 && process.env.NODE_ENV === "production") {
+        message = "Something went wrong!";
+    }
     res.status(statusCode).render("error.ejs", {message});
 })
 
