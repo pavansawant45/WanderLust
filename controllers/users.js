@@ -1,10 +1,11 @@
 const User = require("../models/user");
+const { notifyWelcome } = require("../utils/notifications");
 
 module.exports.renderSignupForm = (req,res) => {
     res.render("users/signup.ejs");
 }
 
-module.exports.signup = async (req,res) =>{
+module.exports.signup = async (req,res,next) =>{
     try{
         let {username,email,password} = req.body;
         const newUser = new User({email, username});
@@ -13,10 +14,10 @@ module.exports.signup = async (req,res) =>{
             if(err){
                 return next(err);
             }
+            notifyWelcome(registeredUser);   // sends in the background, never blocks signup
             req.flash("success", "Welcome to WanderLust!");
             res.redirect("/listings");
         });
-        
     } catch(e) {
         req.flash("error", e.message);
         res.redirect("/signup");

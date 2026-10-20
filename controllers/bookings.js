@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const Razorpay = require("razorpay");
 const Listing = require("../models/listing");
 const Booking = require("../models/booking");
+const { notifyBookingConfirmed } = require("../utils/notifications");
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -100,30 +101,45 @@ module.exports.createBooking = async (req, res) => {
 module.exports.verifyPayment = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = req.body;
 
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-        .update(body)
-        .digest("hex");
-
-    const isValid = expectedSignature === razorpay_signature;
     const booking = await Booking.findById(bookingId);
 
-    if(!booking) {
+    // Only the guest who made this booking may confirm it
+    if (!booking || !booking.guest.equals(req.user._id)) {
         return res.status(404).json({ success: false, message: "Booking not found" });
     }
 
-    if(isValid) {
-        booking.status = "confirmed";
-        booking.razorpayPaymentId = razorpay_payment_id;
-        booking.razorpaySignature = razorpay_signature;
-        await booking.save();
+    // The payment must be for THIS booking's order, not some other (cheaper) one
+    if (booking.razorpayOrderId !== razorpay_order_id) {
+        return res.status(400).json({ success: false, message: "Payment does not match this booking" });
+    }
+
+    // Already confirmed (e.g. the browser retried): don't email twice
+    if (booking.status === "confirmed") {
         return res.json({ success: true, redirectUrl: `/bookings/${booking._id}/success` });
-    } else {
+    }
+
+    const expected = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(razorpay_order_id + "|" + razorpay_payment_id)
+        .digest("hex");
+    const given = Buffer.from(String(razorpay_signature));
+    const wanted = Buffer.from(expected);
+    const isValid = given.length === wanted.length && crypto.timingSafeEqual(given, wanted);
+
+    if (!isValid) {
         booking.status = "cancelled";
         await booking.save();
         return res.status(400).json({ success: false, message: "Payment verification failed" });
     }
+
+    booking.status = "confirmed";
+    booking.razorpayPaymentId = razorpay_payment_id;
+    booking.razorpaySignature = razorpay_signature;
+    await booking.save();
+
+    notifyBookingConfirmed(booking._id);   // emails go out in the background
+
+    return res.json({ success: true, redirectUrl: `/bookings/${booking._id}/success` });
 };
 
 module.exports.bookingSuccess = async (req, res) => {
