@@ -198,3 +198,14 @@ body {
 .f-info-socials a:hover {
     color: #fe424d;
 }
+
+/* ===== Maps ===== */
+.map-box {
+  height: 320px;
+  border-radius: 1rem;
+  z-index: 0;   /* keeps the map underneath the sticky navbar */
+}
+
+.map-box-lg {
+  height: 70vh;
+}

@@ -25,7 +25,7 @@ module.exports.helmetMiddleware = helmet({
             ],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://images.unsplash.com", "https://plus.unsplash.com", "https://cdn.razorpay.com"],
+            imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://images.unsplash.com", "https://plus.unsplash.com", "https://cdn.razorpay.com", "https://tile.openstreetmap.org", "https://cdn.jsdelivr.net"],
             frameSrc: ["https://api.razorpay.com", "https://checkout.razorpay.com"],
             connectSrc: ["'self'", "https://api.razorpay.com", "https://lumberjack.razorpay.com"],
             objectSrc: ["'none'"],

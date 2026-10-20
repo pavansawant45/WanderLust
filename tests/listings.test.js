@@ -1,3 +1,5 @@
+jest.mock("../utils/geocode", () => jest.fn().mockResolvedValue({ type: "Point", coordinates: [73.8567, 18.5204] }));
+
 const request = require("supertest");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -38,6 +40,7 @@ describe("Listings", () => {
         const created = await Listing.findOne({ title: "Test Listing" });
         expect(created).not.toBeNull();
         expect(created.category).toBe("Rooms");
+        expect(Array.from(created.geometry.coordinates)).toEqual([73.8567, 18.5204]);
     });
 
     it("shows the listings index page", async () => {
@@ -72,5 +75,10 @@ describe("Listings", () => {
 
         const unchanged = await Listing.findById(listing._id);
         expect(unchanged.title).toBe("Test Listing Owner Check"); // was NOT changed
+    });
+
+    it("shows the map page", async () => {
+        const res = await request(app).get("/listings/map");
+        expect(res.status).toBe(200);
     });
 });

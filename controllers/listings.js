@@ -1,21 +1,24 @@
 const Listing = require("../models/listing");
+const geocode = require("../utils/geocode");
+
+function buildFilter({ category, country, search }) {
+    const filter = {};
+    if (typeof category === "string" && category) filter.category = category;
+    if (typeof country === "string" && country) filter.country = country;
+    if (typeof search === "string" && search) filter.$text = { $search: search };
+    return filter;
+}
 
 module.exports.index = async (req,res) => {
-    let { category, country, search, page } = req.query;
-    let filter = {};
-
-    if (category) filter.category = category;
-    if (country) filter.country = country;
-    if (search) filter.$text = { $search: search };
+    const { category, country, search, page } = req.query;
+    const filter = buildFilter(req.query);
 
     const limit = 9;
     const currentPage = Math.max(parseInt(page) || 1, 1);
     const skip = (currentPage - 1) * limit;
 
     let listingsQuery = Listing.find(filter);
-
-    if (search) {
-        // Rank results by relevance when doing a text search
+    if (filter.$text) {
         listingsQuery = listingsQuery
             .select({ score: { $meta: "textScore" } })
             .sort({ score: { $meta: "textScore" } });
@@ -35,6 +38,29 @@ module.exports.index = async (req,res) => {
         search: search || "",
         currentPage,
         totalPages
+    });
+}
+
+module.exports.mapView = async (req,res) => {
+    const { category, country, search } = req.query;
+    const filter = buildFilter(req.query);
+    filter["geometry.coordinates.1"] = { $exists: true };   // only listings that have a location
+
+    const listings = await Listing.find(filter).select("title price geometry").limit(500);
+
+    const pins = listings.map((l) => ({
+        id: l._id,
+        title: l.title,
+        price: l.price,
+        lng: l.geometry.coordinates[0],
+        lat: l.geometry.coordinates[1],
+    }));
+
+    res.render("listings/map.ejs", {
+        pins,
+        category: typeof category === "string" ? category : "",
+        country: typeof country === "string" ? country : "",
+        search: typeof search === "string" ? search : "",
     });
 }
 
@@ -65,6 +91,9 @@ module.exports.createListing = async (req,res,next) => {
     newListing.image = { url: req.files[0].path, filename: req.files[0].filename };
     newListing.images = req.files.slice(1).map(f => ({ url: f.path, filename: f.filename }));
 
+    const geometry = await geocode(req.body.listing.location, req.body.listing.country);
+    if (geometry) newListing.geometry = geometry;
+
     await newListing.save();
     req.flash("success", "New Listing Created!");
     res.redirect("/listings");
@@ -84,13 +113,23 @@ module.exports.renderEditForm = async (req,res) => {
 
 module.exports.updateListing = async (req,res) => {
     let {id} = req.params;
+    // findByIdAndUpdate returns the listing as it was BEFORE the update,
+    // so we can compare the old location with the new one
     let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing});
+
+    const { location, country } = req.body.listing;
+    const hasCoords = listing.geometry && listing.geometry.coordinates && listing.geometry.coordinates.length === 2;
+    if (!hasCoords || listing.location !== location || listing.country !== country) {
+        const geometry = await geocode(location, country);
+        if (geometry) listing.geometry = geometry;
+    }
 
     if(req.files && req.files.length > 0) {
         listing.image = { url: req.files[0].path, filename: req.files[0].filename };
         listing.images = req.files.slice(1).map(f => ({ url: f.path, filename: f.filename }));
-        await listing.save();
     }
+
+    await listing.save();   // saves only what changed
 
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);

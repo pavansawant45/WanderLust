@@ -59,6 +59,38 @@
         </div>
     <% } %>
 
+<% const hasMap = listing.geometry && listing.geometry.coordinates && listing.geometry.coordinates.length === 2; %>
+<% if (hasMap) { %>
+<div class="col-8 offset-3 mt-4 mb-4">
+    <h4>Where you'll be</h4>
+    <div id="map" class="map-box"
+         data-lng="<%= listing.geometry.coordinates[0] %>"
+         data-lat="<%= listing.geometry.coordinates[1] %>"
+         data-title="<%= listing.title %>"></div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script nonce="<%= nonce %>">
+    (function () {
+        const el = document.getElementById("map");
+        const lat = parseFloat(el.dataset.lat);
+        const lng = parseFloat(el.dataset.lng);
+
+        const map = L.map(el).setView([lat, lng], 11);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            referrerPolicy: "strict-origin-when-cross-origin",
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // textContent (not HTML) so a listing title can never inject code
+        const label = document.createElement("span");
+        label.textContent = el.dataset.title;
+        L.marker([lat, lng]).addTo(map).bindPopup(label);
+    })();
+</script>
+<% } %>
 
 <div class="col-8 offset-3 mb-3">
     <hr>

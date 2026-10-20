@@ -27,6 +27,8 @@ router
 //New Route
 router.get("/new", isLoggedIn, listingController.renderNewForm);
 
+router.get("/map", wrapAsync(listingController.mapView));
+
 router
     .route("/:id")
     .get(wrapAsync(listingController.showListing))
