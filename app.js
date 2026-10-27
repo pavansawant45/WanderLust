@@ -124,6 +124,7 @@ app.use("/", staticRouter);
 app.use(globalLimiter);
 app.post(["/login", "/signup"], authLimiter);
 
+app.get("/", (req, res) => res.redirect("/listings"));
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);

@@ -15,6 +15,12 @@ afterAll(async () => {
 });
 
 describe("Listings", () => {
+    it("redirects the home page to /listings", async () => {
+        const res = await request(app).get("/");
+        expect(res.status).toBe(302);
+        expect(res.headers.location).toBe("/listings");
+    });
+
     it("blocks creating a listing when not logged in", async () => {
         const res = await request(app).post("/listings").field("listing[title]", "Nope");
         expect(res.status).toBe(302);
