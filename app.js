@@ -38,6 +38,9 @@ main()
 })
 .catch((err) => {
     console.log("Error connecting to DB:", err);
+    if (process.env.NODE_ENV === "production") {
+        process.exit(1);   // fail loudly so Render restarts the service and shows the problem
+    }
 })
 
 app.set("view engine", "ejs");
@@ -157,7 +160,11 @@ app.use((err,req,res,next) =>{
 module.exports = app;
 
 if (require.main === module) {
-    app.listen(8000, () => {
-        console.log("Server is listening to port 8000");
-    });
+    const port = process.env.PORT || 8000;
+    const onReady = () => console.log(`Server is listening on port ${port}`);
+    if (process.env.NODE_ENV === "production") {
+        app.listen(port, "0.0.0.0", onReady);   // Render needs all network interfaces
+    } else {
+        app.listen(port, onReady);
+    }
 }

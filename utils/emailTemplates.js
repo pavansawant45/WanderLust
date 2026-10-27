@@ -3,7 +3,7 @@ const esc = (s) =>
 
 const money = (n) => "₹" + Number(n).toLocaleString("en-IN");
 const day = (d) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-const base = () => process.env.APP_URL || "http://localhost:8000";
+const base = () => process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || "http://localhost:8000";
 
 function layout(heading, bodyHtml, button) {
     const btn = button
