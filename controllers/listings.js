@@ -17,7 +17,7 @@ module.exports.index = async (req,res) => {
     const currentPage = Math.max(parseInt(page) || 1, 1);
     const skip = (currentPage - 1) * limit;
 
-    let listingsQuery = Listing.find(filter);
+    let listingsQuery = Listing.find(filter).populate({ path: "reviews", select: "rating" });
     if (filter.$text) {
         listingsQuery = listingsQuery
             .select({ score: { $meta: "textScore" } })
@@ -30,14 +30,17 @@ module.exports.index = async (req,res) => {
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
+    const showHero = Object.keys(filter).length === 0 && currentPage === 1;
 
     res.render("listings/index.ejs", {
         allListings,
-        category: category || "",
-        country: country || "",
-        search: search || "",
+        category: typeof category === "string" ? category : "",
+        country: typeof country === "string" ? country : "",
+        search: typeof search === "string" ? search : "",
         currentPage,
-        totalPages
+        totalPages,
+        totalCount,
+        showHero
     });
 }
 

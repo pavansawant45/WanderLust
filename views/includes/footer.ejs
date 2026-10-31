@@ -1,16 +1,36 @@
-<footer>
-    <div class="f-info">
-    <div class="f-info-socials">
-        <a href="https://facebook.com" target="_blank" rel="noopener"><i class="fa-brands fa-square-facebook"></i></a>
-        <a href="https://instagram.com" target="_blank" rel="noopener"><i class="fa-brands fa-square-instagram"></i></a>
-        <a href="https://linkedin.com" target="_blank" rel="noopener"><i class="fa-brands fa-square-linkedin"></i></a>
-    </div>
-    <div class="f-info-brand">&copy; <%= new Date().getFullYear() %> WanderLust Private Limited</div>
-    <div class="f-info-links">
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/listings" aria-label="WanderLust, home">
+          <svg class="brand-mark" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M5 25V13a9 9 0 0 1 18 0v12z" fill="currentColor"/><circle cx="14" cy="13" r="3.2" fill="#F2A93B"/></svg>
+          <span>WanderLust</span>
+        </a>
+        <p>Book unusual stays, from treehouses to castles.</p>
+      </div>
+      <nav aria-label="Explore">
+        <h3>Explore</h3>
+        <a href="/listings?category=Mountains">Mountains</a>
+        <a href="/listings?category=Castles">Castles</a>
+        <a href="/listings?category=Amazing%20Pools">Amazing Pools</a>
+        <a href="/listings/map">Map view</a>
+      </nav>
+      <nav aria-label="Hosting">
+        <h3>Hosting</h3>
+        <a href="/listings/new">List your place</a>
+        <a href="/host/bookings">Bookings on my listings</a>
+      </nav>
+      <nav aria-label="Company">
+        <h3>Company</h3>
         <a href="/about">About</a>
+        <a href="/contact">Contact</a>
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
-        <a href="/contact">Contact</a>
+      </nav>
     </div>
+    <div class="footer-base">
+      <span>&copy; <%= new Date().getFullYear() %> WanderLust. A demo project: payments run in test mode.</span>
+      <a href="https://github.com/pavansawant45/WanderLust" target="_blank" rel="noopener" aria-label="WanderLust on GitHub"><i class="fa-brands fa-github" aria-hidden="true"></i> Source code</a>
     </div>
+  </div>
 </footer>

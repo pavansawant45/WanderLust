@@ -1,173 +1,175 @@
-<% layout("/layouts/boilerplate") %> 
-    
-    <style>
-   #filters {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    overflow-x: auto;
-   }
-   .filter {
-    text-align: center;
-    margin-right: 2rem;
-    margin-top: 2rem;
-    opacity: 0.7;
-    flex: 0 0 auto;
-   }
-   .filter:hover{
-    opacity: 1;
-    cursor: pointer;
-   }
-   .filter p{
-    font-size: 0.7rem;
-   }
-   .filter-link {
-    text-decoration: none;
-    color: inherit;
-   }
-   .active-filter {
-    opacity: 1 !important;
-    border-bottom: 2px solid #fe424d;
-   }
-   .tax-info{
-    display: none;
-   }
-   .tax-toggle{
-    border: 1px solid black;
-    border-radius: 1rem;
-    height: 3.25rem;
-    padding: 1rem;
-    margin-left: 2rem;
-    display: flex;
-    align-items: center;
-    flex: 0 0 auto;
-   }
-   @media (max-width: 767.98px) {
-      .tax-toggle { margin-left: 1rem; margin-top: 1rem; }
-   }
-   </style>
+<% layout("/layouts/boilerplate") %>
+<%
+const categories = ["Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic", "Domes"];
+const icons = {
+    "Trending": "fa-solid fa-fire",
+    "Rooms": "fa-solid fa-bed",
+    "Iconic Cities": "fa-solid fa-mountain-city",
+    "Mountains": "fa-solid fa-mountain",
+    "Castles": "fa-brands fa-fort-awesome",
+    "Amazing Pools": "fa-solid fa-person-swimming",
+    "Camping": "fa-solid fa-campground",
+    "Farms": "fa-solid fa-tractor",
+    "Arctic": "fa-solid fa-snowman",
+    "Domes": "fa-solid fa-igloo"
+};
 
+// Smaller, faster Cloudinary images (other hosts are left alone)
+const thumb = (url, w) => (url && url.includes("/upload/")) ? url.replace("/upload/", `/upload/w_${w},q_auto,f_auto/`) : url;
+const avgRating = (l) => (l.reviews && l.reviews.length) ? l.reviews.reduce((s, r) => s + r.rating, 0) / l.reviews.length : null;
 
+const hasFilters = !!(category || country || search);
+const countryQs = country ? `&country=${encodeURIComponent(country)}` : "";
+const allHref = "/listings" + (country ? `?country=${encodeURIComponent(country)}` : "");
 
-    <%
-    const categories = ["Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic", "Domes"];
-    const icons = {
-        "Trending": "fa-solid fa-fire",
-        "Rooms": "fa-solid fa-bed",
-        "Iconic Cities": "fa-solid fa-mountain-city",
-        "Mountains": "fa-solid fa-mountain",
-        "Castles": "fa-brands fa-fort-awesome",
-        "Amazing Pools": "fa-solid fa-person-swimming",
-        "Camping": "fa-solid fa-campground",
-        "Farms": "fa-solid fa-tractor",
-        "Arctic": "fa-solid fa-snowman",
-        "Domes": "fa-solid fa-igloo"
-    };
-    const qs = country ? `&country=${country}` : "";
-    %>
+const mapParts = [];
+if (category) mapParts.push(`category=${encodeURIComponent(category)}`);
+if (country) mapParts.push(`country=${encodeURIComponent(country)}`);
+if (search) mapParts.push(`search=${encodeURIComponent(search)}`);
+const mapQs = mapParts.length ? "?" + mapParts.join("&") : "";
 
-    <div id="filters">
-        <% categories.forEach(cat => { %>
-            <a href="/listings?category=<%= encodeURIComponent(cat) %><%= qs %>" class="filter-link">
-                <div class="filter <%= category === cat ? 'active-filter' : '' %>">
-                    <div><i class="<%= icons[cat] %>"></i></div>
-                    <p><%= cat %></p>
-                </div>
-            </a>
-        <% }) %>
+let heading = "All stays";
+if (search) heading = `Stays matching “${search}”` + (country ? ` in ${country}` : "");
+else if (category) heading = category + (country ? ` in ${country}` : "");
+else if (country) heading = `Stays in ${country}`;
+const Tag = showHero ? "h2" : "h1";
+%>
 
-        <% if(category) { %>
-            <a href="/listings<%= country ? '?country=' + country : '' %>" class="filter-link">
-                <div class="filter">
-                    <div><i class="fa-solid fa-xmark"></i></div>
-                    <p>Clear</p>
-                </div>
-            </a>
-        <% } %>
+<% if (showHero) { %>
+<section class="hero">
+  <div class="hero-copy">
+    <h1>Book unusual stays, from treehouses to castles.</h1>
+    <p class="hero-sub">Browse homes, cabins and villas from hosts around the world. Search by place, choose your dates and pay online.</p>
+    <%- include("../includes/search-form.ejs", { size: "lg" }) %>
+  </div>
+  <% const heroPics = allListings.filter(l => l.image && l.image.url).slice(0, 3); %>
+  <% if (heroPics.length) { %>
+  <div class="hero-arches">
+    <% heroPics.forEach((l, i) => { %>
+      <a class="arch arch-<%= i + 1 %>" href="/listings/<%= l._id %>" aria-label="<%= l.title %>">
+        <img src="<%= thumb(l.image.url, 640) %>" alt="" <%= i === 0 ? 'fetchpriority=high' : '' %>>
+      </a>
+    <% }) %>
+  </div>
+  <% } %>
+</section>
+<% } %>
 
-            <%
-      const mapParts = [];
-      if(category) mapParts.push(`category=${encodeURIComponent(category)}`);
-      if(country) mapParts.push(`country=${encodeURIComponent(country)}`);
-      if(search) mapParts.push(`search=${encodeURIComponent(search)}`);
-      const mapQs = mapParts.length ? "?" + mapParts.join("&") : "";
-    %>
-    <a href="/listings/map<%= mapQs %>" class="filter-link">
-        <div class="filter">
-            <div><i class="fa-solid fa-map-location-dot"></i></div>
-            <p>Map</p>
-        </div>
+<section class="browse-bar">
+  <nav class="chips" aria-label="Stay types">
+    <a class="chip <%= !category ? 'is-active' : '' %>" href="<%= allHref %>" <%= !category ? 'aria-current=page' : '' %>>
+      <i class="fa-solid fa-border-all" aria-hidden="true"></i> All
     </a>
+    <% categories.forEach(cat => { %>
+      <a class="chip <%= category === cat ? 'is-active' : '' %>" href="/listings?category=<%= encodeURIComponent(cat) %><%= countryQs %>" <%= category === cat ? 'aria-current=page' : '' %>>
+        <i class="<%= icons[cat] %>" aria-hidden="true"></i> <%= cat %>
+      </a>
+    <% }) %>
+  </nav>
+</section>
 
-        <div class="tax-toggle">
-            <div class="form-check-reverse form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-            <label class="form-check-label" for="flexSwitchCheckDefault">Display total after taxes</label>
-            </div>
-        </div>
+<div class="results-head">
+  <div class="results-text">
+    <<%= Tag %> class="results-title"><%= heading %></<%= Tag %>>
+    <span class="results-count"><%= totalCount %> <%= totalCount === 1 ? "stay" : "stays" %></span>
+  </div>
+  <div class="tools">
+    <a class="btn btn-ghost btn-sm" href="/listings/map<%= mapQs %>"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> Map view</a>
+    <div class="form-check form-switch tax-switch">
+      <input class="form-check-input" type="checkbox" role="switch" id="tax-switch">
+      <label class="form-check-label" for="tax-switch">Show prices with tax</label>
     </div>
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
-        <% for (let listing of allListings) { %>
-        <a href="/listings/<%= listing._id %>" class="listing-link">
-            <div class="card col listing-card">
-                <img src="<%= listing.image.url %>" class="card-img-top" alt="listing_image" style="height: 20rem;">
-                <div class="card-img-overlay"></div>
-                <div class="card-body">
-                    <p class="card-text">
-                        <b><%= listing.title %></b>
-                        <br>
-                        &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
-                        <i class="tax-info"> &nbsp; &nbsp;+18% GST</i>
-                    </p>
-                </div>
-            </div>
-        </a>
-        <% } %>
-    </div>
+  </div>
+</div>
 
-    <% if(totalPages > 1) { %>
-    <nav class="mt-4 mb-5" aria-label="Listing pages">
-    <ul class="pagination justify-content-center">
-        <%
-          const qp = (p) => {
-            let params = [`page=${p}`];
-            if(category) params.push(`category=${encodeURIComponent(category)}`);
-            if(country) params.push(`country=${encodeURIComponent(country)}`);
-            if(search) params.push(`search=${encodeURIComponent(search)}`);
-            return `/listings?${params.join("&")}`;
-          };
-        %>
-        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-            <a class="page-link" href="<%= qp(currentPage - 1) %>">Previous</a>
-        </li>
-        <% for(let i = 1; i <= totalPages; i++) { %>
-            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                <a class="page-link" href="<%= qp(i) %>"><%= i %></a>
-            </li>
-        <% } %>
-        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-            <a class="page-link" href="<%= qp(currentPage + 1) %>">Next</a>
-        </li>
-    </ul>
-    </nav>
+<% if (allListings.length === 0) { %>
+  <div class="empty">
+    <% if (hasFilters) { %>
+      <h2>No stays match that search</h2>
+      <p>Try a different place, pick another type, or clear your filters.</p>
+      <a class="btn btn-brand" href="/listings">Show all stays</a>
+    <% } else { %>
+      <h2>No stays yet</h2>
+      <p>Be the first to list a place on WanderLust.</p>
+      <a class="btn btn-brand" href="/listings/new">List your place</a>
     <% } %>
+  </div>
+<% } else { %>
+  <div class="stay-grid">
+    <% for (let listing of allListings) { %>
+      <% const avg = avgRating(listing); %>
+      <a class="stay-card" href="/listings/<%= listing._id %>">
+        <div class="stay-media">
+          <img src="<%= thumb(listing.image.url, 600) %>" alt="<%= listing.title %>" loading="lazy">
+          <% if (listing.category) { %><span class="stay-tag"><%= listing.category %></span><% } %>
+        </div>
+        <div class="stay-body">
+          <div class="stay-top">
+            <h3 class="stay-title"><%= listing.title %></h3>
+            <% if (avg !== null) { %>
+              <span class="stay-rating"><i class="fa-solid fa-star" aria-hidden="true"></i> <%= avg.toFixed(1) %> <span>(<%= listing.reviews.length %>)</span></span>
+            <% } %>
+          </div>
+          <p class="stay-place"><%= listing.location %>, <%= listing.country %></p>
+          <p class="stay-price"><strong>&#8377;<%= listing.price.toLocaleString("en-IN") %></strong> per night <span class="tax-info">+18% GST</span></p>
+        </div>
+      </a>
+    <% } %>
+  </div>
+<% } %>
 
-    <!-- <ul>
-        <% for (let listing of allListings) { %>
-            <li><a href="/listings/<%= listing._id %>"><%= listing.title %></a></li>
-        <% } %>
-    </ul> -->
+<% if (totalPages > 1) { %>
+<nav class="mt-4 mb-5" aria-label="Listing pages">
+  <ul class="pagination justify-content-center">
+    <%
+      const qp = (p) => {
+        let params = [`page=${p}`];
+        if (category) params.push(`category=${encodeURIComponent(category)}`);
+        if (country) params.push(`country=${encodeURIComponent(country)}`);
+        if (search) params.push(`search=${encodeURIComponent(search)}`);
+        return `/listings?${params.join("&")}`;
+      };
+    %>
+    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+      <a class="page-link" href="<%= qp(currentPage - 1) %>">Previous</a>
+    </li>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+        <a class="page-link" href="<%= qp(i) %>" <%= i === currentPage ? 'aria-current=page' : '' %>><%= i %></a>
+      </li>
+    <% } %>
+    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+      <a class="page-link" href="<%= qp(currentPage + 1) %>">Next</a>
+    </li>
+  </ul>
+</nav>
+<% } %>
+
+<% if (showHero) { %>
+<section class="how">
+  <h2>How WanderLust works</h2>
+  <ol class="steps">
+    <li><span class="step-num">1</span><h3>Search</h3><p>Find a stay by place, country or type.</p></li>
+    <li><span class="step-num">2</span><h3>Book and pay</h3><p>Pick your dates and pay online.</p></li>
+    <li><span class="step-num">3</span><h3>Get confirmed</h3><p>See your booking on screen and receive it by email.</p></li>
+  </ol>
+</section>
+
+<section class="host-band">
+  <div>
+    <h2>Have a place guests would love?</h2>
+    <p>List it on WanderLust and manage every booking in one place.</p>
+  </div>
+  <a class="btn btn-on-brand" href="/listings/new">List your place</a>
+</section>
+<% } %>
 
 <script nonce="<%= nonce %>">
-    let taxSwitch = document.getElementById("flexSwitchCheckDefault");
-    taxSwitch.addEventListener("click", () =>{
-        let taxInfo = document.getElementsByClassName("tax-info");
-        for (info of taxInfo) {
-            if(info.style.display != "inline"){
-                info.style.display = "inline";
-            } else {
-                info.style.display = "none";
-            }
-        }
-    })
+    (function () {
+        const taxSwitch = document.getElementById("tax-switch");
+        if (!taxSwitch) return;
+        taxSwitch.addEventListener("change", () => {
+            document.body.classList.toggle("show-tax", taxSwitch.checked);
+        });
+    })();
 </script>

@@ -21,6 +21,13 @@ describe("Listings", () => {
         expect(res.headers.location).toBe("/listings");
     });
 
+    it("hides the hero and explains an empty result", async () => {
+        const res = await request(app).get("/listings?country=Atlantis");
+        expect(res.status).toBe(200);
+        expect(res.text).not.toContain('class="hero"');
+        expect(res.text).toContain("No stays match");
+    });
+
     it("blocks creating a listing when not logged in", async () => {
         const res = await request(app).post("/listings").field("listing[title]", "Nope");
         expect(res.status).toBe(302);
@@ -52,7 +59,7 @@ describe("Listings", () => {
     it("shows the listings index page", async () => {
         const res = await request(app).get("/listings");
         expect(res.status).toBe(200);
-        expect(res.text).toContain("Explore");
+        expect(res.text).toContain('class="hero"');
     });
 
     it("prevents a non-owner from editing someone else's listing", async () => {

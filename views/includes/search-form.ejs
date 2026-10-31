@@ -1,0 +1,15 @@
+<% const sz = typeof size !== "undefined" ? size : "sm"; %>
+<form class="search-pill search-pill-<%= sz %>" role="search" action="/listings" method="GET">
+  <label class="visually-hidden" for="search-<%= sz %>">Search by place or stay name</label>
+  <input id="search-<%= sz %>" type="search" name="search" placeholder="Where to?" value="<%= typeof search !== 'undefined' ? search : '' %>">
+  <label class="visually-hidden" for="country-<%= sz %>">Country</label>
+  <select id="country-<%= sz %>" name="country">
+    <option value="">All countries</option>
+    <% if (typeof countries !== "undefined" && countries) { %>
+      <% [...countries].sort().forEach(c => { %>
+        <option value="<%= c %>" <%= (typeof country !== "undefined" && country === c) ? "selected" : "" %>><%= c %></option>
+      <% }) %>
+    <% } %>
+  </select>
+  <button type="submit"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Search</span></button>
+</form>
